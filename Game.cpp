@@ -10,8 +10,11 @@ enum eDirection {
     DOWN
 };
 
+bool loop = true;
 bool gameOver;
-const int fieldWidth = 30;
+bool menuPause;
+bool gameStarted;
+const int fieldWidth = 40;
 const int fieldHeight = 20;
 
 char wallChar = '#';
@@ -22,15 +25,18 @@ int x, y, fruitX, fruitY, score;
 
 eDirection direction;
 
-void positionFruit()
-{
+void Screen(const char *string);
+
+void positionFruit() {
   fruitX = rand() % fieldWidth;
   fruitY = rand() % fieldHeight;
 }
 
-void Setup()
-{
+void Setup() {
+  loop = true;
   gameOver = false;
+  menuPause = true;
+  gameStarted = false;
   score = 0;
   direction = STOP;
 
@@ -112,23 +118,98 @@ void Logic() {
       break;
   }
 
-  if (x > fieldWidth || x < 0 || y > fieldHeight || y < 0)
+  if (x > fieldWidth - 1 || x < 0 || y > fieldHeight || y < 0) {
     gameOver = true;
+    menuPause = false;
+    gameStarted = false;
+  }
 
-  if (x == fruitX && y == fruitY)
-  {
+  if (x == fruitX && y == fruitY) {
     score += rand();
     positionFruit();
+  }
+}
+
+void Screen(const char *screenName) {
+  if (!gameStarted) {
+    system("cls");
+  }
+
+  switch (*screenName) {
+    case *"Game": {
+      Draw();
+      Input();
+      Logic();
+
+      break;
+    }
+
+    case *"gameOver": {
+      std::cout << "GAME OVER!" << std::endl;
+      std::cout << "YOUR SCORE: " << score << std::endl;
+      std::cout << std::endl;
+//      std::cout << "PRESS 'B' FOR GOING TO BACK 'START MENU'" << std::endl;
+      std::cout << "PRESS 'Q' FOR CLOSE GAME" << std::endl;
+
+      if (_kbhit()) {
+        switch (_getch()) {
+          case 'q': {
+            loop = false;
+            break;
+          }
+        }
+      }
+
+      break;
+    }
+
+    case *"StartMenu": {
+      std::cout << "----SNAKE GAME----" << std::endl;
+      std::cout << "\n\n";
+      std::cout << "PRESS 'X' FOR START GAME" << std::endl;
+      std::cout << "PRESS 'Q' FOR CLOSE GAME" << std::endl;
+      std::cout << "\n\n";
+
+      if (_kbhit()) {
+        switch (_getch()) {
+          case 'x' : {
+            gameOver = false;
+            menuPause = false;
+            gameStarted = true;
+            break;
+          }
+
+          case 'q': {
+            loop = false;
+            break;
+          }
+        }
+      }
+
+      break;
+    }
+  }
+};
+
+void Loop() {
+  if (menuPause) {
+    Screen("StartMenu");
+  }
+
+  if (gameOver) {
+    Screen("gameOver");
+  }
+
+  if (gameStarted) {
+    Screen("Game");
   }
 }
 
 int main() {
   Setup();
 
-  while (!gameOver) {
-    Draw();
-    Input();
-    Logic();
+  while (loop) {
+    Loop();
   }
 
   return 0;
