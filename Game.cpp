@@ -17,9 +17,11 @@ bool gameStarted;
 const int fieldWidth = 40;
 const int fieldHeight = 20;
 
-char wallChar = '#';
-char fruitChar = '@';
+char wallChar = '|';
+char fruitChar = 'F';
 char snakeChar = '0';
+
+int tailX[100], tailY[100], nTail;
 
 int x, y, fruitX, fruitY, score;
 
@@ -62,8 +64,17 @@ void Draw() {
         std::cout << snakeChar;
       else if (i == fruitY && j == fruitX)
         std::cout << fruitChar;
-      else
-        std::cout << " ";
+      else {
+        bool print = false;
+        for (int k = 0; k < nTail; k++) {
+          if (tailX[k] == j && tailY[k] == i) {
+            print = true;
+            std::cout << 'o';
+          }
+        }
+        if (!print)
+          std::cout << " ";
+      }
     }
     std::cout << std::endl;
   }
@@ -74,6 +85,12 @@ void Draw() {
   std::cout << std::endl << std::endl;
 
   std::cout << "Score: " << score << std::endl;
+}
+
+void gameOverAction() {
+  gameOver = true;
+  menuPause = false;
+  gameStarted = false;
 }
 
 void Input() {
@@ -103,6 +120,25 @@ void Input() {
 }
 
 void Logic() {
+  int prevX = tailX[0];
+  int prevY = tailY[0];
+
+  int prev2X, prev2Y;
+
+  tailX[0] = x;
+  tailY[0] = y;
+
+  for (int i = 1; i < nTail; i++) {
+    prev2X = tailX[i];
+    prev2Y = tailY[i];
+
+    tailX[i] = prevX;
+    tailY[i] = prevY;
+
+    prevX = prev2X;
+    prevY = prev2Y;
+  }
+
   switch (direction) {
     case LEFT:
       x = x - 1;
@@ -118,15 +154,27 @@ void Logic() {
       break;
   }
 
-  if (x > fieldWidth - 1 || x < 0 || y > fieldHeight || y < 0) {
-    gameOver = true;
-    menuPause = false;
-    gameStarted = false;
+  if (x >= fieldWidth - 1)
+    x = 0;
+  else if (x < 0)
+    x = fieldWidth - 2;
+
+  if (y >= fieldHeight - 1)
+    y = 0;
+  else if (y < 0)
+    y = fieldHeight - 2;
+
+  for (int i = 0; i < nTail; i++) {
+    if (tailX[i] == x && tailY[i] == y) {
+      gameOverAction();
+    }
   }
 
   if (x == fruitX && y == fruitY) {
     score += rand();
     positionFruit();
+
+    nTail = nTail + 1;
   }
 }
 
@@ -166,13 +214,13 @@ void Screen(const char *screenName) {
     case *"StartMenu": {
       std::cout << "----SNAKE GAME----" << std::endl;
       std::cout << "\n\n";
-      std::cout << "PRESS 'X' FOR START GAME" << std::endl;
+      std::cout << "PRESS 'S' FOR START GAME" << std::endl;
       std::cout << "PRESS 'Q' FOR CLOSE GAME" << std::endl;
       std::cout << "\n\n";
 
       if (_kbhit()) {
         switch (_getch()) {
-          case 'x' : {
+          case 's' : {
             gameOver = false;
             menuPause = false;
             gameStarted = true;
