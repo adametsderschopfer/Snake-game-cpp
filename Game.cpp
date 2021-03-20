@@ -1,6 +1,7 @@
 #include <iostream>
 #include <conio.h>
 #include <stdlib.h>
+#include <windows.h>
 
 enum eDirection {
     STOP = 0,
@@ -35,6 +36,20 @@ void positionFruit() {
 }
 
 void Setup() {
+  HWND console = GetConsoleWindow();
+  RECT ConsoleRect;
+  GetWindowRect(console, &ConsoleRect);
+
+  MoveWindow(
+          console,
+          ConsoleRect.left,
+          ConsoleRect.top,
+          500,
+          500,
+          TRUE
+  );
+
+
   loop = true;
   gameOver = false;
   menuPause = true;
@@ -212,11 +227,13 @@ void Screen(const char *screenName) {
     }
 
     case *"StartMenu": {
-      std::cout << "----SNAKE GAME----" << std::endl;
+      std::cout << "-------SNAKE GAME-------" << std::endl;
       std::cout << "\n\n";
       std::cout << "PRESS 'S' FOR START GAME" << std::endl;
       std::cout << "PRESS 'Q' FOR CLOSE GAME" << std::endl;
       std::cout << "\n\n";
+      std::cout << "------------------------" << std::endl;
+      std::cout << "install the English keyboard" << std::endl;
 
       if (_kbhit()) {
         switch (_getch()) {
